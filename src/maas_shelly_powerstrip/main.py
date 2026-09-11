@@ -5,8 +5,8 @@ MAAS webhook power type:
   power_on_uri    POST  http://<host>:<port>/outlets/<n>/on
   power_off_uri   POST  http://<host>:<port>/outlets/<n>/off
   power_query_uri GET   http://<host>:<port>/outlets/<n>/status
-  power_on_regex  status.*\\bon\\b      (MAAS default, matches our JSON)
-  power_off_regex status.*\\boff\\b     (MAAS default, matches our JSON)
+  power_on_regex  "status":"on"     (must be set; MAAS defaults do not match)
+  power_off_regex "status":"off"
 """
 
 from __future__ import annotations

@@ -167,11 +167,11 @@ async def test_unknown_outlet_404(api):
     assert (await c.get("/outlets/7/status")).status_code == 404
 
 
-async def test_maas_default_regexes_match():
+async def test_documented_maas_regexes_match():
     import re
 
-    on_re = re.compile(r"status.*\bon\b")
-    off_re = re.compile(r"status.*\boff\b")
+    on_re = re.compile(r'"status":"on"')  # as documented in README
+    off_re = re.compile(r'"status":"off"')
     shelly = FakeShelly(power={0: 60.0})
     async for c, _ in run_app(shelly):
         off_body = (await c.get("/outlets/0/status")).text
