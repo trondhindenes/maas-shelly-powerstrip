@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MAAS Shelly Power Strip</title>
+  <script src="/static/htmx.min.js"></script>
+  <style>
+    :root { color-scheme: light dark; }
+    body { font-family: system-ui, sans-serif; margin: 0; padding: 1.5rem 1rem; max-width: 720px; margin-inline: auto; }
+    h1 { font-size: 1.25rem; margin: 0 0 .25rem; }
+    .meta { color: gray; font-size: .85rem; margin-bottom: 1rem; }
+    table { width: 100%; border-collapse: collapse; }
+    th, td { text-align: left; padding: .5rem .4rem; border-bottom: 1px solid rgba(128,128,128,.3); }
+    th { font-size: .8rem; text-transform: uppercase; color: gray; }
+    td.num { text-align: right; font-variant-numeric: tabular-nums; }
+    .badge { display: inline-block; padding: .15rem .55rem; border-radius: 999px; font-size: .8rem; font-weight: 600; }
+    .badge.on { background: #1f9d55; color: white; }
+    .badge.off { background: #777; color: white; }
+    .badge.unknown { background: #c47f00; color: white; }
+    button { padding: .35rem .8rem; border-radius: 6px; border: 1px solid rgba(128,128,128,.5); background: transparent; cursor: pointer; font: inherit; }
+    button:hover:not(:disabled) { background: rgba(128,128,128,.15); }
+    button:disabled { opacity: .5; cursor: default; }
+    .htmx-request button { opacity: .5; pointer-events: none; }
+    .msg { margin-top: .75rem; font-size: .9rem; min-height: 1.2em; }
+    .msg.error { color: #c0392b; }
+    .busy { color: gray; font-size: .8rem; }
+    #token { font: inherit; padding: .3rem; width: 14rem; }
+  </style>
+</head>
+<body>
+  <h1>MAAS Shelly Power Strip</h1>
+  <div class="meta">
+    strip: {{ shelly_host }} · idle threshold: {{ settings.idle_watt_threshold }} W over {{ settings.idle_window_seconds }} s · cycle gap: {{ settings.cycle_off_seconds }} s
+  </div>
+
+  {% if auth_required %}
+  <p><label>API token <input id="token" type="password" placeholder="Bearer token"></label></p>
+  {% endif %}
+
+  <div id="outlets" hx-get="/ui/outlets" hx-trigger="every 2s" hx-swap="innerHTML">
+    {% include "outlets.html" %}
+  </div>
+
+  <script>
+    (function () {
+      var input = document.getElementById("token");
+      if (!input) return;
+      try { input.value = localStorage.getItem("api_token") || ""; } catch (e) {}
+      input.addEventListener("change", function () {
+        try { localStorage.setItem("api_token", input.value); } catch (e) {}
+        htmx.trigger("#outlets", "refresh");
+      });
+      document.body.addEventListener("htmx:configRequest", function (evt) {
+        if (input.value) evt.detail.headers["Authorization"] = "Bearer " + input.value;
+      });
+    })();
+  </script>
+</body>
+</html>

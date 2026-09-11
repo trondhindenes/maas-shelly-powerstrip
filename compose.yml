@@ -1,0 +1,13 @@
+services:
+  maas-shelly-powerstrip:
+    image: ghcr.io/trondhindenes/maas-shelly-powerstrip:latest
+    build: .
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      SHELLY_HOST: "192.168.202.252"
+      IDLE_WATT_THRESHOLD: "5"
+      IDLE_WINDOW_SECONDS: "5"
+      CYCLE_OFF_SECONDS: "5"
+      # API_TOKEN: "change-me"
