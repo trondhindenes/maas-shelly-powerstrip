@@ -162,6 +162,11 @@ async def test_off(api):
     assert shelly.output[2] is False
 
 
+async def test_healthz_reports_auth_disabled(api):
+    c, _, _ = api
+    assert (await c.get("/healthz")).json()["auth_enabled"] is False
+
+
 async def test_unknown_outlet_404(api):
     c, _, _ = api
     assert (await c.get("/outlets/7/status")).status_code == 404
@@ -187,7 +192,8 @@ async def test_bearer_token_required_when_configured():
         assert (await c.get("/outlets/0/status")).status_code == 401
         r = await c.get("/outlets/0/status", headers={"Authorization": "Bearer s3cret"})
         assert r.status_code == 200
-        assert (await c.get("/healthz")).status_code == 200  # health is unauthenticated
+        h = await c.get("/healthz")  # health is unauthenticated
+        assert h.status_code == 200 and h.json()["auth_enabled"] is True
 
 
 # --- HTML UI -----------------------------------------------------------------

@@ -73,6 +73,7 @@ def create_app(settings: Settings | None = None, client: ShellyClientProtocol | 
             log.warning("could not reach shelly at %s on startup: %s", settings.shelly_host, sampler.last_error)
         else:
             log.info("connected to shelly at %s, outlets: %s", settings.shelly_host, sampler.outlets)
+        log.info("bearer token auth: %s", "enabled (API_TOKEN is set)" if settings.api_token else "disabled")
         app.state.settings = settings
         app.state.controller = PowerController(settings, shelly, sampler)
         try:
@@ -101,7 +102,7 @@ def create_app(settings: Settings | None = None, client: ShellyClientProtocol | 
         ctl = get_controller(request)
         if ctl.sampler.last_error:
             raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, f"shelly unreachable: {ctl.sampler.last_error}")
-        return {"ok": True, "outlets": ctl.outlets}
+        return {"ok": True, "outlets": ctl.outlets, "auth_enabled": bool(request.app.state.settings.api_token)}
 
     @app.get("/outlets", response_model=list[OutletResponse], dependencies=auth)
     async def list_outlets(request: Request):
